@@ -39,12 +39,12 @@ venv.bak/
 *~
 .DS_Store
 
-# Data - Original high-quality images (too large for git)
+# Data - All images and generated files (too large for git)
 data/originals/
 data/panels_original/
-
-# Keep web-optimized images for deployment
-# data/panels_web/
+data/panels_web/
+data/stitched/
+data/*.json
 
 # Metadata JSON files are kept
 # data/*.json
