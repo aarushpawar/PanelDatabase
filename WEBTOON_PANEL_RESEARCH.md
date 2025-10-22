@@ -289,3 +289,327 @@ MIN_EDGE_DENSITY = 50       # Edge pixels per row = content
 - Zero splits through panel content
 - Preserves narrative pacing (respects spacing intent)
 - Handles 100+ episode corpus reliably
+
+---
+
+## 9. Panel Overlap Strategy (NEW REQUIREMENT)
+
+### Problem Statement
+If panel detection splits are slightly inaccurate, content near the boundary could be cut off or split between panels. This makes searching incomplete, as a character or object might be partially in one panel and partially in another.
+
+### Solution: Overlapping Panel Regions
+
+**Concept:**
+Instead of panels ending exactly where the next begins, create intentional overlap zones where both adjacent panels include the same content. This ensures:
+1. No content is lost due to imprecise splits
+2. Search completeness - if something appears near a boundary, it's fully captured in at least one panel
+3. Redundancy provides safety margin for detection errors
+
+### Implementation Strategy
+
+**Overlap Parameters:**
+```python
+OVERLAP_MARGIN_TOP = 50      # Pixels to extend upward into previous panel
+OVERLAP_MARGIN_BOTTOM = 50   # Pixels to extend downward into next panel
+```
+
+**Example:**
+```
+Original split points:
+Panel 1: y=0 to y=1000
+Panel 2: y=1000 to y=2000
+Panel 3: y=2000 to y=3000
+
+With overlap:
+Panel 1: y=0 to y=1050       (+50px overlap with Panel 2)
+Panel 2: y=950 to y=2050     (+50px from Panel 1, +50px into Panel 3)
+Panel 3: y=1950 to y=3000    (+50px from Panel 2)
+```
+
+### Visual Representation
+
+```
+[---- Panel 1 Content ----]
+                      [Overlap Zone]
+                      [---- Panel 2 Content ----]
+                                          [Overlap Zone]
+                                          [---- Panel 3 Content ----]
+```
+
+### Considerations
+
+**Storage Impact:**
+- Minimal increase in file size (~5-10% per panel)
+- Overlap zones typically white space anyway
+- Benefit of search completeness outweighs storage cost
+
+**Deduplication:**
+- Search results may return adjacent panels
+- Frontend can implement duplicate detection
+- Show context: "This panel also appears in adjacent panel X"
+
+**Optimal Overlap Size:**
+- 50-100px recommended (6-12% of minimum panel height)
+- Large enough to capture typical objects/characters
+- Small enough to not significantly increase file size
+- Adjustable based on detection confidence
+
+**Adaptive Overlap:**
+```python
+if gap_size < 100:
+    # Small gap = less confident split
+    overlap = 100  # Use larger overlap for safety
+elif gap_size > 500:
+    # Large gap = very confident split
+    overlap = 25   # Minimal overlap needed
+else:
+    # Standard gap
+    overlap = 50   # Default overlap
+```
+
+### Benefits
+
+1. **Content Completeness**: Guarantees full capture of all visual elements
+2. **Search Reliability**: Objects near boundaries will be fully searchable
+3. **Error Tolerance**: Allows for imperfect detection without data loss
+4. **Quality Assurance**: Overlap zones can be validated for consistency
+
+---
+
+## 10. Enhanced Emotion Tagging System (NEW REQUIREMENT)
+
+### Current State
+The tagging system has an `emotions` field, but it's underpopulated and lacks a comprehensive taxonomy.
+
+### Proposed Emotion Taxonomy
+
+**Primary Emotions (Basic 6):**
+- Happy
+- Sad
+- Angry
+- Fearful
+- Disgusted
+- Surprised
+
+**Extended Emotions (Facial Expressions):**
+- Shocked
+- Confused
+- Worried
+- Anxious
+- Embarrassed
+- Shy
+- Blushing
+- Crying
+- Laughing
+- Smiling
+- Smirking
+- Frowning
+- Scowling
+- Glaring
+- Panicked
+- Terrified
+- Calm
+- Serene
+- Determined
+- Focused
+- Confident
+- Proud
+- Smug
+- Annoyed
+- Frustrated
+- Tired
+- Exhausted
+- Excited
+- Enthusiastic
+- Hopeful
+- Hopeless
+- Depressed
+- Lonely
+- Content
+- Relieved
+- Guilty
+- Remorseful
+- Jealous
+- Envious
+- Suspicious
+- Distrustful
+- Loving
+- Affectionate
+- Compassionate
+- Sympathetic
+
+**Mood/Atmosphere Tags:**
+- Tense
+- Peaceful
+- Chaotic
+- Ominous
+- Suspenseful
+- Dramatic
+- Romantic
+- Comedic
+- Melancholic
+- Nostalgic
+- Mysterious
+- Intense
+- Light-hearted
+- Dark
+- Bittersweet
+
+**Character State Tags:**
+- Injured
+- Unconscious
+- Awakening
+- Transforming
+- Powered-up
+- Weakened
+- Sleeping
+- Dreaming
+
+**Interaction Emotions:**
+- Arguing
+- Fighting
+- Reconciling
+- Comforting
+- Threatening
+- Protecting
+- Bonding
+- Confronting
+
+### Implementation Recommendations
+
+**1. Hierarchical Organization:**
+```json
+{
+  "emotion_categories": {
+    "basic": ["Happy", "Sad", "Angry", "Fearful", "Disgusted", "Surprised"],
+    "expressions": ["Shocked", "Confused", "Worried", ...],
+    "moods": ["Tense", "Peaceful", "Chaotic", ...],
+    "states": ["Injured", "Unconscious", ...],
+    "interactions": ["Arguing", "Fighting", "Reconciling", ...]
+  }
+}
+```
+
+**2. Multi-Select Support:**
+- Panels can have multiple emotions (e.g., "Happy + Crying" = tears of joy)
+- Characters in same panel can have different emotions
+- Support per-character emotion tagging
+
+**3. Enhanced UI for Tagging:**
+
+**Quick Select Buttons (Most Common):**
+```
+[Happy] [Sad] [Angry] [Shocked] [Determined] [Worried]
+```
+
+**Categorized Dropdowns:**
+```
+Primary Emotions: [Dropdown]
+Facial Expressions: [Dropdown with autocomplete]
+Mood/Atmosphere: [Dropdown with autocomplete]
+```
+
+**Character-Specific Emotions:**
+```
+Sayeon: [Happy] [Determined] + Add emotion
+Jaehee: [Worried] [Protective] + Add emotion
+```
+
+**4. Autocomplete Enhancement:**
+Update `tagging.js` to include emotion autocomplete:
+```javascript
+populateDatalist('emotionList', EMOTION_TAXONOMY);
+```
+
+**5. Auto-Tagging Support:**
+
+**Expression Detection (ML):**
+- Use pre-trained facial expression models
+- Detect faces in panels
+- Classify expressions automatically
+- Generate confidence scores
+
+**Scene Detection:**
+- Analyze color palette for mood (dark = ominous, bright = cheerful)
+- Detect action lines for "intense" or "chaotic"
+- Text analysis of dialogue for emotional context
+
+**6. Search & Filter Integration:**
+
+**Emotion-Based Search:**
+- "Show all panels where Sayeon is angry"
+- "Find determined facial expressions"
+- "Show tense/suspenseful scenes"
+
+**Mood-Based Browsing:**
+- Filter by atmosphere (romantic, action, comedic)
+- Create mood boards/collections
+- Track emotional arcs across episodes
+
+### Data Structure Updates
+
+**Panel Object with Enhanced Emotions:**
+```json
+{
+  "manual": {
+    "emotions": {
+      "overall": ["Tense", "Dramatic"],
+      "characters": {
+        "Sayeon": ["Determined", "Angry"],
+        "Jaehee": ["Worried", "Protective"]
+      },
+      "atmosphere": "Ominous"
+    }
+  },
+  "automated": {
+    "detected_emotions": {
+      "faces": [
+        {
+          "character": "Unknown",
+          "emotion": "Shocked",
+          "confidence": 0.87,
+          "bbox": [x, y, w, h]
+        }
+      ],
+      "scene_mood": {
+        "mood": "Dark",
+        "confidence": 0.72
+      }
+    }
+  }
+}
+```
+
+### Testing & Validation
+
+**Inter-Rater Reliability:**
+- Multiple taggers tag same panels
+- Measure agreement on emotion labels
+- Establish tagging guidelines
+
+**ML Model Validation:**
+- Compare automated tags with manual tags
+- Calculate precision/recall per emotion
+- Fine-tune thresholds
+
+**Search Effectiveness:**
+- Test emotion-based searches
+- Verify results match expectations
+- User feedback on relevance
+
+### Benefits
+
+1. **Enhanced Searchability**: Find specific emotional moments
+2. **Story Analysis**: Track character emotional arcs
+3. **Scene Discovery**: Find specific moods/atmospheres
+4. **Fan Engagement**: Create emotion-based collections
+5. **Content Recommendations**: "More scenes like this"
+
+### Migration Plan
+
+1. **Update database schema** to support enhanced emotion structure
+2. **Update tagging UI** with new emotion taxonomy
+3. **Add emotion autocomplete** with categorization
+4. **Implement ML emotion detection** (optional, future enhancement)
+5. **Backfill existing panels** with basic emotion tags
+6. **Add emotion filters** to search interface
