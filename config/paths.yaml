@@ -1,0 +1,67 @@
+# Path Configuration
+# All file paths used throughout the project
+# Paths are relative to project root
+
+# Base directories
+base:
+  project_root: "."               # Auto-detected at runtime
+  data_dir: "data"
+  config_dir: "config"
+  tests_dir: "tests"
+  logs_dir: "logs"
+
+# Data directories
+data:
+  originals: "data/originals"             # Downloaded episode images
+  stitched: "data/stitched"               # Stitched full episode images
+  panels_original: "data/panels_original" # Extracted panels (high quality)
+  panels_web: "data/panels_web"           # Web-optimized panels
+  character_images: "data/character_images"
+
+# Metadata files
+metadata:
+  episodes: "data/episode_metadata.json"
+  panels: "data/panel_metadata.json"
+  optimization: "data/optimization_metadata.json"
+  wiki: "data/wiki_categories.json"
+  character_embeddings: "data/character_embeddings.pkl"
+
+# Frontend/output
+frontend:
+  root: "frontend"
+  data_dir: "frontend/data"
+  images_dir: "frontend/images"
+
+  # Frontend data files
+  database: "frontend/data/panels_database.json"
+  statistics: "frontend/data/statistics.json"
+  wiki_data: "frontend/data/wiki_data.json"
+  panels_s2: "frontend/data/panels_s2.json"
+
+# ML models
+models:
+  yolo_character: "models/yolov8n.pt"
+  yolo_bubble: "models/bubble_yolov8.pt"
+  face_cascade: "models/lbpcascade_animeface.xml"
+  emotion_model: "models/emotion_vgg16.h5"
+  scene_model: "models/places365.pth"
+
+# Logs
+logs:
+  main: "logs/main.log"
+  scraper: "logs/scraper.log"
+  panel_detection: "logs/panel_detection.log"
+  ml_tagging: "logs/ml_tagging.log"
+  errors: "logs/errors.log"
+
+# Checkpoints & temp files
+temp:
+  checkpoint: "data/processing_checkpoint.json"
+  ml_checkpoint: "data/ml_processing_checkpoint.json"
+  cache_dir: "data/.cache"
+  temp_dir: "data/.temp"
+
+# External URLs (for scraping)
+external:
+  webtoon_base: "https://www.webtoons.com"
+  wiki_base: "https://hand-jumper.fandom.com"

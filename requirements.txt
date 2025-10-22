@@ -1,7 +1,21 @@
-httpx
-beautifulsoup4
-pillow
-opencv-python
-webtoons
-aiofiles
-tqdm
+# Hand Jumper Panel Database - Core Requirements
+# Production dependencies with pinned versions for reproducibility
+
+# Web scraping
+httpx==0.25.2
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# Image processing
+opencv-python==4.8.1.78
+Pillow==10.1.0
+numpy==1.24.3
+
+# Data handling
+tqdm==4.66.1
+
+# Configuration
+PyYAML==6.0.1
+
+# CLI & utilities
+pathlib; python_version < '3.4'  # Built-in for Python 3.4+

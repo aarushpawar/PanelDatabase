@@ -1,0 +1,28 @@
+# Hand Jumper Panel Database - Development Requirements
+# Dependencies for development, testing, and code quality
+# Install with: pip install -r requirements-dev.txt
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-asyncio==0.21.1
+
+# Code Quality
+black==23.12.1              # Code formatter
+flake8==6.1.0               # Linter
+mypy==1.7.1                 # Type checker
+isort==5.13.2               # Import sorter
+
+# Type stubs
+types-PyYAML==6.0.12.12
+types-Pillow==10.1.0.2
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+
+# Profiling & debugging
+ipython==8.18.1
+ipdb==0.13.13
+memory-profiler==0.61.0
