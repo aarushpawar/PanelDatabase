@@ -613,3 +613,401 @@ populateDatalist('emotionList', EMOTION_TAXONOMY);
 4. **Implement ML emotion detection** (optional, future enhancement)
 5. **Backfill existing panels** with basic emotion tags
 6. **Add emotion filters** to search interface
+
+---
+
+## 11. ML-First Automated Tagging Pipeline (PRIMARY APPROACH)
+
+### Philosophy: Automation Over Manual Input
+
+**Goal:** Minimize manual tagging through comprehensive ML automation. Manual input should only be needed for:
+- Corrections of incorrect predictions
+- Edge cases where ML confidence is low (<70%)
+- Rare/unique entities not in training data
+
+### ML Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Panel Input (800x800-3000px)              │
+└─────────────────────────────────┬───────────────────────────┘
+                                  │
+    ┌─────────────────────────────┼─────────────────────────┐
+    │                             │                         │
+    ▼                             ▼                         ▼
+┌───────────────┐       ┌──────────────────┐    ┌─────────────────┐
+│   Character   │       │  Text/Dialogue   │    │ Scene Analysis  │
+│   Detection   │       │    Detection     │    │  & Mood         │
+│   (YOLOv8)    │       │   (OCR + YOLO)   │    │  (ResNet/VGG)   │
+└───────┬───────┘       └────────┬─────────┘    └────────┬────────┘
+        │                        │                       │
+        ▼                        ▼                       ▼
+┌───────────────┐       ┌──────────────────┐    ┌─────────────────┐
+│   Face        │       │  Speech Bubble   │    │ Color Palette   │
+│   Detection   │       │   Segmentation   │    │   Analysis      │
+│ (lbpcascade)  │       │   (U-Net)        │    │  (K-means)      │
+└───────┬───────┘       └────────┬─────────┘    └────────┬────────┘
+        │                        │                       │
+        ▼                        ▼                       ▼
+┌───────────────┐       ┌──────────────────┐    ┌─────────────────┐
+│   Emotion     │       │  Text Content    │    │   Atmosphere    │
+│  Recognition  │       │   Extraction     │    │  Classification │
+│ (Deepface/VGG)│       │  (manga-ocr)     │    │  (Multi-label)  │
+└───────┬───────┘       └────────┬─────────┘    └────────┬────────┘
+        │                        │                       │
+        ▼                        ▼                       ▼
+┌───────────────┐       ┌──────────────────┐    ┌─────────────────┐
+│   Character   │       │  Dialogue Tags   │    │  Mood Tags      │
+│    Identity   │       │  (action/quiet)  │    │ (tense/calm)    │
+│  Recognition  │       │                  │    │                 │
+│  (Face Recog) │       │                  │    │                 │
+└───────┬───────┘       └────────┬─────────┘    └────────┬────────┘
+        │                        │                       │
+        └────────────────┬───────┴───────────────────────┘
+                         ▼
+                ┌────────────────────┐
+                │  Confidence Scorer │
+                │   & Aggregator     │
+                └──────────┬─────────┘
+                           ▼
+                ┌────────────────────┐
+                │   Tagged Panel     │
+                │  (with confidence) │
+                └────────────────────┘
+```
+
+### Available ML Models & Libraries
+
+**Character & Face Detection:**
+- YOLOv8/v11 (Ultralytics) - Latest object detection
+- lbpcascade_animeface (OpenCV) - Anime/manga face detection
+- Manga FaceNet - Specialized manga face detection
+- face_recognition - Face embedding and matching
+
+**Emotion Recognition:**
+- Deepface - Multi-model emotion detection (VGG16, DenseNet121)
+- FER2013 pretrained models - 7 basic emotions
+- Custom fine-tuning on manga/anime datasets
+
+**Text & OCR:**
+- manga-ocr (Hugging Face) - Japanese/English manga text
+- YOLOv8 fine-tuned - Speech bubble detection
+- U-Net with VGG16 - Text segmentation
+- Tesseract OCR - Fallback for English text
+
+**Scene & Mood:**
+- Places365-GoogLeNet - Scene classification (365 categories)
+- ResNet50/VGG16 - Transfer learning for mood
+- Color analysis (K-means) - Palette-based mood detection
+
+### Implementation Components
+
+#### Component 1: Character Detection & Recognition
+
+```python
+import torch
+from ultralytics import YOLO
+import cv2
+import face_recognition
+
+# Load models
+character_detector = YOLO('yolov8n.pt')
+face_cascade = cv2.CascadeClassifier('lbpcascade_animeface.xml')
+
+def detect_characters(panel_image):
+    # Detect all characters in panel
+    results = character_detector(panel_image, conf=0.6)
+    
+    characters = []
+    for box in results[0].boxes:
+        x1, y1, x2, y2 = box.xyxy[0]
+        char_img = panel_image[int(y1):int(y2), int(x1):int(x2)]
+        
+        # Detect face within character box
+        gray = cv2.cvtColor(char_img, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+        
+        if len(faces) > 0:
+            # Recognize character identity
+            face_encoding = face_recognition.face_encodings(char_img)
+            if face_encoding:
+                character_name = match_character_embedding(face_encoding[0])
+                characters.append({
+                    'name': character_name['name'],
+                    'confidence': character_name['confidence'],
+                    'bbox': [x1, y1, x2, y2]
+                })
+    
+    return characters
+```
+
+#### Component 2: Emotion Detection
+
+```python
+from deepface import DeepFace
+
+def detect_emotions(panel_image, character_boxes):
+    emotions_by_character = {}
+    
+    for char in character_boxes:
+        x1, y1, x2, y2 = char['bbox']
+        char_img = panel_image[int(y1):int(y2), int(x1):int(x2)]
+        
+        try:
+            analysis = DeepFace.analyze(
+                char_img, 
+                actions=['emotion'],
+                enforce_detection=False
+            )
+            
+            emotions = analysis[0]['emotion']
+            dominant_emotion = max(emotions, key=emotions.get)
+            confidence = emotions[dominant_emotion] / 100
+            
+            emotions_by_character[char['name']] = {
+                'emotion': dominant_emotion,
+                'confidence': confidence,
+                'all_emotions': emotions
+            }
+        except:
+            emotions_by_character[char['name']] = None
+    
+    return emotions_by_character
+```
+
+#### Component 3: Text & Dialogue Detection
+
+```python
+from manga_ocr import MangaOcr
+
+mocr = MangaOcr()
+
+def detect_dialogue(panel_image):
+    # Detect speech bubbles
+    bubble_detector = YOLO('bubble_detector.pt')
+    bubbles = bubble_detector(panel_image)
+    
+    dialogue_data = []
+    for bubble in bubbles:
+        x1, y1, x2, y2 = bubble.xyxy[0]
+        bubble_img = panel_image[int(y1):int(y2), int(x1):int(x2)]
+        
+        # Extract text
+        text = mocr(bubble_img)
+        dialogue_data.append({
+            'text': text,
+            'bbox': [x1, y1, x2, y2],
+            'confidence': bubble.conf
+        })
+    
+    return {
+        'has_dialogue': len(dialogue_data) > 0,
+        'dialogue_count': len(dialogue_data),
+        'dialogues': dialogue_data
+    }
+```
+
+#### Component 4: Scene & Mood Analysis
+
+```python
+import numpy as np
+from sklearn.cluster import KMeans
+
+def analyze_mood(panel_image):
+    mood_tags = []
+    
+    # Color analysis
+    colors = extract_dominant_colors(panel_image, k=5)
+    brightness = np.mean(colors)
+    
+    if brightness < 100:
+        mood_tags.append(('Dark', 0.8))
+        mood_tags.append(('Ominous', 0.7))
+    elif brightness > 180:
+        mood_tags.append(('Bright', 0.8))
+        mood_tags.append(('Light-hearted', 0.6))
+    
+    # Edge density (action detection)
+    gray = cv2.cvtColor(panel_image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    edge_density = np.sum(edges > 0) / edges.size
+    
+    if edge_density > 0.15:
+        mood_tags.append(('Intense', 0.8))
+        mood_tags.append(('Chaotic', 0.7))
+    elif edge_density < 0.05:
+        mood_tags.append(('Calm', 0.7))
+        mood_tags.append(('Peaceful', 0.6))
+    
+    return {'mood_tags': mood_tags, 'brightness': brightness, 'edge_density': edge_density}
+```
+
+#### Component 5: Confidence Scoring & Aggregation
+
+```python
+CONFIDENCE_THRESHOLDS = {
+    'high': 0.85,      # Auto-accept
+    'medium': 0.70,    # Accept with flag
+    'low': 0.50,       # Requires review
+    'very_low': 0.30   # Manual tagging
+}
+
+def aggregate_tags(detection_results):
+    final_tags = {
+        'characters': [],
+        'emotions': {},
+        'dialogue': False,
+        'mood_tags': [],
+        'confidence': {},
+        'requires_review': []
+    }
+    
+    # Characters (only high confidence)
+    for char in detection_results['characters']:
+        if char['confidence'] > 0.70:
+            final_tags['characters'].append(char['name'])
+            final_tags['confidence']['character_' + char['name']] = char['confidence']
+        elif char['confidence'] > 0.50:
+            final_tags['requires_review'].append(f"Character: {char['name']}")
+    
+    # Emotions
+    for char_name, emotion_data in detection_results['emotions'].items():
+        if emotion_data and emotion_data['confidence'] > 0.60:
+            final_tags['emotions'][char_name] = [emotion_data['emotion']]
+            final_tags['confidence']['emotion_' + char_name] = emotion_data['confidence']
+    
+    # Dialogue
+    if detection_results['dialogue']['has_dialogue']:
+        final_tags['dialogue'] = True
+    
+    # Mood
+    for mood, conf in detection_results['mood']['mood_tags']:
+        if conf > 0.65:
+            final_tags['mood_tags'].append(mood)
+    
+    # Overall confidence score
+    all_confidences = list(final_tags['confidence'].values())
+    final_tags['overall_confidence'] = np.mean(all_confidences) if all_confidences else 0.0
+    
+    return final_tags
+```
+
+### Training Strategy
+
+**Phase 1: Baseline (Week 1)**
+- Deploy pretrained models
+- Test on 50-100 Hand Jumper panels
+- Measure baseline accuracy
+
+**Phase 2: Data Collection (Week 2)**
+- Manually tag 500-1000 panels (one-time)
+- Collect character faces: 50-100 per main character
+- Label emotions: 30+ examples per type
+- Mark speech bubbles and dialogue
+
+**Phase 3: Fine-Tuning (Week 3-4)**
+- Fine-tune YOLOv8 on Hand Jumper characters
+- Train face recognition embeddings
+- Fine-tune emotion model on Hand Jumper expressions
+- Optimize confidence thresholds
+
+**Phase 4: Deployment (Week 5)**
+- Process all 4,968 panels automatically
+- Flag low-confidence results
+- Review and correct ~10-20% of panels
+- Continuously improve with feedback
+
+### Automated Workflow
+
+```
+Untagged Panels (4,968)
+        ↓
+Batch Processing (GPU)
+        ↓
+ML Pipeline (5-10 sec/panel)
+        ↓
+┌───────┴────────┐
+│                │
+Auto-tagged     Review Queue
+(80-90%)        (10-20%)
+│                │
+│                ↓
+│         Manual Review
+│                │
+└────────┬───────┘
+         ↓
+  Tagged Database
+    (100%)
+```
+
+### Success Metrics
+
+**Target Accuracy:**
+- Character detection: 90%+ precision, 85%+ recall
+- Emotion detection: 75%+ accuracy
+- Dialogue detection: 95%+ accuracy
+- Mood tagging: 70%+ agreement
+
+**Automation Rate:**
+- 80-90% fully auto-tagged
+- 10-20% require review
+- <5% require full manual tagging
+
+**Processing Speed:**
+- 5-10 seconds per panel (GPU)
+- Full dataset: 7-14 hours
+- Batch processing for efficiency
+
+### Required Libraries
+
+```python
+# Add to requirements.txt
+torch>=2.0.0
+ultralytics>=8.0.0           # YOLOv8/v11
+opencv-python>=4.8.0
+deepface>=0.0.79             # Emotion detection
+face-recognition>=1.3.0      # Face matching
+manga-ocr>=0.1.11            # Japanese OCR
+transformers>=4.30.0
+scikit-learn>=1.3.0
+pillow>=10.0.0
+numpy>=1.24.0
+```
+
+### Cost Considerations
+
+**GPU Requirements:**
+- Recommended: NVIDIA GPU with 8GB+ VRAM
+- Cloud: Google Colab Pro ($10/month) or AWS EC2
+- One-time processing: $20-50 for full dataset
+
+**Storage:**
+- Model weights: 2-3GB
+- Results: minimal overhead
+
+### Fallback Strategies
+
+**When ML Fails:**
+- Very dark/bright panels → Histogram equalization preprocessing
+- Occluded faces → Use body pose or partial recognition
+- Rare characters → "Unknown" tag + manual review
+- Complex emotions → Default to "Neutral" + flag
+- No dialogue detected → Full-panel OCR scan
+
+**Continuous Improvement:**
+- Collect corrections as training data
+- Retrain models quarterly
+- A/B test new versions
+- Track accuracy metrics over time
+
+### Key Advantages Over Manual Tagging
+
+1. **Speed**: 1000x faster than manual tagging
+2. **Consistency**: No fatigue or subjective bias
+3. **Completeness**: Processes entire 4,968 panel corpus
+4. **Scalability**: Handles new episodes automatically
+5. **Cost-effective**: One-time setup, ongoing automation
+6. **Continuous learning**: Improves with feedback
+
+**Bottom Line:** ML-first approach reduces manual work from months to days, with 80-90% automation rate.
+
