@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scrape_demo.py)",
+      "Bash(python stitch_and_extract.py)",
+      "Bash(pip install opencv-python)",
+      "Bash(python optimize_images.py)",
+      "Bash(python scraper.py)",
+      "Bash(python scrape_wiki.py)",
+      "Bash(cat \"E:\\code\\webtoon database\\data\\wiki_categories.json\")",
+      "Bash(python main.py)",
+      "Bash(python -c \"import json; data = json.load(open(''data/episode_metadata.json'')); print(f''Total episodes in metadata: {len(data[\"\"episodes\"\"])}''); episodes = sorted(set((e[''season''], e[''episode'']) for e in data[''episodes''])); print(f''Unique episodes: {len(episodes)}''); print(''Episodes:'', episodes)\")",
+      "Read(//e/code/data/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

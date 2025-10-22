@@ -1,0 +1,21 @@
+# Local testing server (not needed for GitHub Pages)
+server.py
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Optional: Uncomment if hosting images externally
+# images/**/*.jpg
+# !images/.gitkeep

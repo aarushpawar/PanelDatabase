@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Jumper - Panel Tagging Interface</title>
+    <link rel="stylesheet" href="css/tagging.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hand Jumper Panel Tagging</h1>
+            <div class="stats">
+                <span>Total: <strong id="totalPanels">0</strong></span>
+                <span>Tagged: <strong id="taggedPanels">0</strong></span>
+                <span>Remaining: <strong id="remainingPanels">0</strong></span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Left sidebar - Panel navigation -->
+            <aside class="panel-list">
+                <div class="filter-section">
+                    <h3>Filter Panels</h3>
+                    <select id="seasonFilter">
+                        <option value="">All Seasons</option>
+                    </select>
+                    <select id="episodeFilter">
+                        <option value="">All Episodes</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" id="showUntaggedOnly">
+                        Show untagged only
+                    </label>
+                </div>
+
+                <div class="panel-thumbnails" id="panelThumbnails">
+                    <!-- Panel thumbnails will be loaded here -->
+                </div>
+            </aside>
+
+            <!-- Center - Current panel display -->
+            <main class="panel-viewer">
+                <div class="panel-display">
+                    <img id="currentPanel" src="" alt="Current panel">
+                    <div class="panel-info">
+                        <span id="panelId">No panel selected</span>
+                        <span id="panelDimensions"></span>
+                    </div>
+                </div>
+
+                <div class="navigation-buttons">
+                    <button id="prevPanel">← Previous</button>
+                    <button id="nextPanel">Next →</button>
+                </div>
+            </main>
+
+            <!-- Right sidebar - Tagging form -->
+            <aside class="tagging-form">
+                <h3>Add Tags</h3>
+
+                <div class="form-section">
+                    <label>Characters</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="characterInput" list="characterList" placeholder="Type character name...">
+                        <button onclick="addTag('characters', 'characterInput')">Add</button>
+                    </div>
+                    <datalist id="characterList"></datalist>
+                    <div id="characterTags" class="tag-display"></div>
+                </div>
+
+                <div class="form-section">
+                    <label>Locations</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="locationInput" list="locationList" placeholder="Type location...">
+                        <button onclick="addTag('locations', 'locationInput')">Add</button>
+                    </div>
+                    <datalist id="locationList"></datalist>
+                    <div id="locationTags" class="tag-display"></div>
+                </div>
+
+                <div class="form-section">
+                    <label>Organizations</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="organizationInput" list="organizationList" placeholder="Type organization...">
+                        <button onclick="addTag('organizations', 'organizationInput')">Add</button>
+                    </div>
+                    <datalist id="organizationList"></datalist>
+                    <div id="organizationTags" class="tag-display"></div>
+                </div>
+
+                <div class="form-section">
+                    <label>Items</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="itemInput" list="itemList" placeholder="Type item...">
+                        <button onclick="addTag('items', 'itemInput')">Add</button>
+                    </div>
+                    <datalist id="itemList"></datalist>
+                    <div id="itemTags" class="tag-display"></div>
+                </div>
+
+                <div class="form-section">
+                    <label>General Tags</label>
+                    <div class="tag-input-container">
+                        <input type="text" id="tagInput" placeholder="Type tag...">
+                        <button onclick="addTag('tags', 'tagInput')">Add</button>
+                    </div>
+                    <div id="generalTags" class="tag-display"></div>
+                    <div class="suggested-tags">
+                        <button class="tag-btn" onclick="addPredefinedTag('tags', 'dialogue')">dialogue</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('tags', 'action')">action</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('tags', 'essence-use')">essence-use</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('tags', 'flashback')">flashback</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('tags', 'dramatic')">dramatic</button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label>Emotions</label>
+                    <div class="emotion-buttons">
+                        <button class="tag-btn" onclick="addPredefinedTag('emotions', 'angry')">Angry</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('emotions', 'sad')">Sad</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('emotions', 'happy')">Happy</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('emotions', 'scared')">Scared</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('emotions', 'determined')">Determined</button>
+                        <button class="tag-btn" onclick="addPredefinedTag('emotions', 'surprised')">Surprised</button>
+                    </div>
+                    <div id="emotionTags" class="tag-display"></div>
+                </div>
+
+                <div class="form-section">
+                    <label>Checkboxes</label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="hasDialogue">
+                        Has Dialogue
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="isAction">
+                        Action Scene
+                    </label>
+                </div>
+
+                <div class="form-section">
+                    <label>Notes</label>
+                    <textarea id="notesInput" rows="4" placeholder="Add any additional notes about this panel..."></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="saveTags()">Save Tags</button>
+                    <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
+                    <button class="btn-secondary" onclick="saveAndNext()">Save & Next</button>
+                </div>
+
+                <div id="saveStatus" class="save-status"></div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="js/tagging.js"></script>
+</body>
+</html>

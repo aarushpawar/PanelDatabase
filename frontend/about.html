@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Hand Jumper Panel Database</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>Hand Jumper Panel Database</h1>
+                <p class="subtitle">About this project</p>
+            </div>
+            <nav class="header-nav">
+                <a href="index.html">Search</a>
+                <a href="browse.html">Browse</a>
+                <a href="tagging.html">Tag Panels</a>
+                <a href="about.html" class="active">About</a>
+            </nav>
+        </header>
+
+        <!-- Content -->
+        <section class="about-content">
+            <h2>About This Project</h2>
+            <p>
+                The Hand Jumper Panel Database is a fan-made searchable archive of panels from the webtoon
+                <strong>Hand Jumper</strong> by SLEEPACROSS. This project was created as a portfolio piece and
+                learning exercise in web scraping, data organization, and static site deployment.
+            </p>
+
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Searchable Database:</strong> Find panels by character, location, tags, or keywords</li>
+                <li><strong>Advanced Filtering:</strong> Filter by season, episode range, characters, and more</li>
+                <li><strong>High-Quality Storage:</strong> Both original quality and web-optimized images are preserved</li>
+                <li><strong>Manual Tagging:</strong> Comprehensive tagging system for detailed categorization</li>
+                <li><strong>Static Deployment:</strong> No backend required, fully deployable on GitHub Pages</li>
+            </ul>
+
+            <h3>Technology Stack</h3>
+            <ul>
+                <li><strong>Backend Scripts (Python):</strong>
+                    <ul>
+                        <li>Web scraping with httpx and BeautifulSoup4</li>
+                        <li>Panel extraction using OpenCV</li>
+                        <li>Image optimization with Pillow</li>
+                    </ul>
+                </li>
+                <li><strong>Frontend:</strong>
+                    <ul>
+                        <li>Vanilla HTML, CSS, and JavaScript</li>
+                        <li>Fuse.js for fuzzy search functionality</li>
+                        <li>Lazy loading for performance optimization</li>
+                        <li>Responsive design for mobile and desktop</li>
+                    </ul>
+                </li>
+                <li><strong>Data Storage:</strong>
+                    <ul>
+                        <li>JSON-based database for static deployment</li>
+                        <li>Dual image storage (original + optimized)</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>How It Works</h3>
+            <ol>
+                <li><strong>Scraping:</strong> Python scripts download episodes from webtoons.com with rate limiting</li>
+                <li><strong>Panel Extraction:</strong> Computer vision algorithms split episodes into individual panels</li>
+                <li><strong>Optimization:</strong> Images are compressed for web while preserving originals</li>
+                <li><strong>Tagging:</strong> Hybrid approach - automated basic tags + manual detailed tags</li>
+                <li><strong>Search:</strong> Fuse.js enables fast, fuzzy searching through panel metadata</li>
+            </ol>
+
+            <h3>Usage</h3>
+            <p>
+                This database is intended for personal reference and fan discussion. All content belongs to
+                SLEEPACROSS and LINE Webtoon. This is not for commercial use.
+            </p>
+
+            <h3>Contributing</h3>
+            <p>
+                If you'd like to contribute tags or suggest improvements, please visit the GitHub repository.
+            </p>
+
+            <h3>Legal Notice</h3>
+            <p class="legal">
+                <strong>Hand Jumper</strong> is created by SLEEPACROSS and published by LINE Webtoon.
+                All rights to the original work belong to the creator and publisher.<br><br>
+
+                This database is an unofficial fan project created for educational, archival, and non-commercial
+                purposes. It is protected under fair use for commentary and analysis.<br><br>
+
+                If you are the copyright holder and have concerns about this project, please contact me
+                and I will address them promptly.
+            </p>
+
+            <h3>Resources</h3>
+            <ul>
+                <li><a href="https://www.webtoons.com/en/action/hand-jumper/list?title_no=2702" target="_blank">
+                    Read Hand Jumper on Webtoon
+                </a></li>
+                <li><a href="https://hand-jumper.fandom.com/" target="_blank">
+                    Hand Jumper Wiki
+                </a></li>
+                <li><a href="https://github.com" target="_blank">
+                    GitHub Repository
+                </a></li>
+            </ul>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                Hand Jumper Panel Database - A fan project<br>
+                Hand Jumper © SLEEPACROSS. All rights reserved.<br>
+                This is an unofficial fan-made database for educational and archival purposes.
+            </p>
+        </footer>
+    </div>
+
+    <style>
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .about-content h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .about-content h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--primary-color);
+        }
+
+        .about-content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .about-content ul, .about-content ol {
+            margin: 1rem 0 1rem 2rem;
+            line-height: 1.8;
+        }
+
+        .about-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .about-content ul ul {
+            margin-top: 0.5rem;
+        }
+
+        .about-content a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        .about-content a:hover {
+            text-decoration: underline;
+        }
+
+        .legal {
+            background: var(--bg-medium);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-color);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Jumper Panel Database</title>
+    <meta name="description" content="Searchable database of Hand Jumper webtoon panels, tagged by character, location, and lore">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>Hand Jumper Panel Database</h1>
+                <p class="subtitle">Explore and search all panels from the Hand Jumper webtoon</p>
+            </div>
+            <nav class="header-nav">
+                <a href="index.html" class="active">Search</a>
+                <a href="browse.html">Browse</a>
+                <a href="tagging.html">Tag Panels</a>
+                <a href="about.html">About</a>
+            </nav>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-bar">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search by character, location, tag, or keyword..."
+                        autocomplete="off"
+                    >
+                    <button id="searchButton" class="btn-search">Search</button>
+                    <button id="clearSearch" class="btn-clear">Clear</button>
+                </div>
+
+                <button id="toggleFilters" class="btn-toggle-filters">
+                    <span>Advanced Filters</span>
+                    <span class="arrow">▼</span>
+                </button>
+
+                <!-- Advanced Filters -->
+                <div id="advancedFilters" class="advanced-filters hidden">
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label>Season</label>
+                            <select id="filterSeason" multiple>
+                                <option value="">All Seasons</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Episode Range</label>
+                            <div class="range-inputs">
+                                <input type="number" id="filterEpisodeMin" placeholder="From">
+                                <span>-</span>
+                                <input type="number" id="filterEpisodeMax" placeholder="To">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Characters</label>
+                            <input type="text" id="filterCharacters" list="characterList" placeholder="Type character name">
+                            <datalist id="characterList"></datalist>
+                            <div id="selectedCharacters" class="selected-tags"></div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Locations</label>
+                            <input type="text" id="filterLocations" list="locationList" placeholder="Type location">
+                            <datalist id="locationList"></datalist>
+                            <div id="selectedLocations" class="selected-tags"></div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Tags</label>
+                            <div class="quick-tags">
+                                <button class="tag-filter" data-tag="dialogue">Dialogue</button>
+                                <button class="tag-filter" data-tag="action">Action</button>
+                                <button class="tag-filter" data-tag="essence-use">Essence Use</button>
+                                <button class="tag-filter" data-tag="flashback">Flashback</button>
+                                <button class="tag-filter" data-tag="dramatic">Dramatic</button>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Sort By</label>
+                            <select id="sortBy">
+                                <option value="relevance">Relevance</option>
+                                <option value="episode-asc">Episode (Oldest First)</option>
+                                <option value="episode-desc">Episode (Newest First)</option>
+                                <option value="panel-asc">Panel Number</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button id="applyFilters" class="btn-apply">Apply Filters</button>
+                        <button id="resetFilters" class="btn-reset">Reset All</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Stats -->
+            <div class="search-stats">
+                <span id="resultsCount">0 panels found</span>
+                <span id="loadingIndicator" class="loading hidden">Searching...</span>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section">
+            <div id="resultsGrid" class="results-grid">
+                <!-- Panel cards will be dynamically inserted here -->
+            </div>
+
+            <div id="noResults" class="no-results hidden">
+                <h2>No panels found</h2>
+                <p>Try adjusting your search terms or filters</p>
+            </div>
+
+            <!-- Load More Button -->
+            <div class="load-more-container">
+                <button id="loadMore" class="btn-load-more hidden">Load More</button>
+            </div>
+        </section>
+
+        <!-- Panel Modal -->
+        <div id="panelModal" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <div class="modal-body">
+                    <div class="modal-image-container">
+                        <img id="modalImage" src="" alt="Panel">
+                    </div>
+                    <div class="modal-info">
+                        <h2 id="modalTitle"></h2>
+                        <div class="modal-metadata">
+                            <p><strong>Season:</strong> <span id="modalSeason"></span></p>
+                            <p><strong>Episode:</strong> <span id="modalEpisode"></span></p>
+                            <p><strong>Panel:</strong> <span id="modalPanel"></span></p>
+                        </div>
+                        <div class="modal-tags">
+                            <div id="modalCharacters" class="tag-section"></div>
+                            <div id="modalLocations" class="tag-section"></div>
+                            <div id="modalTags" class="tag-section"></div>
+                        </div>
+                        <div id="modalNotes" class="modal-notes"></div>
+                        <div class="modal-actions">
+                            <button id="viewOriginal" class="btn-primary">View Original Quality</button>
+                            <button id="modalPrev" class="btn-nav">← Previous</button>
+                            <button id="modalNext" class="btn-nav">Next →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                Hand Jumper Panel Database - A fan project<br>
+                Hand Jumper © SLEEPACROSS. All rights reserved.<br>
+                This is an unofficial fan-made database for educational and archival purposes.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Fuse.js for fuzzy search -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+    <script src="js/search.js"></script>
+</body>
+</html>
