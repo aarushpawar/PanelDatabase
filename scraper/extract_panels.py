@@ -1,7 +1,16 @@
 """
 Panel Extraction Script
-Splits webtoon episode images into individual panels
-Uses contour detection since webtoons are typically vertical scrolls
+
+DEPRECATED: This module has been replaced by the unified panel detector.
+The functions below now delegate to scraper.core.panel_detector.
+All functionality has been consolidated into a single, well-tested module.
+
+For new code, use:
+    from scraper.core.panel_detector import PanelDetector
+    detector = PanelDetector(mode='standard')
+    panels = detector.detect(image_path)
+
+This file is kept for backward compatibility only.
 """
 
 import cv2
@@ -10,6 +19,18 @@ from pathlib import Path
 import json
 from tqdm import tqdm
 import shutil
+import warnings
+
+# Import new unified detector
+from .migrate_panel_detection import detect_panels_simple as detect_panels_simple_new
+
+# Show deprecation warning when module is imported
+warnings.warn(
+    "extract_panels.py is deprecated. "
+    "Use scraper.core.panel_detector.PanelDetector instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 INPUT_DIR = Path("../data/originals")
 OUTPUT_DIR = Path("../data/panels_original")

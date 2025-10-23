@@ -14,6 +14,9 @@ import json
 from tqdm import tqdm
 import sys
 
+# Import new unified panel detector
+from .migrate_panel_detection import detect_panel_gaps as detect_panel_gaps_new
+
 # Force unbuffered output
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -89,6 +92,28 @@ def detect_panel_gaps(stitched_image):
     """
     Detect horizontal white gaps between panels
     Returns list of (start_y, end_y) tuples for each panel
+
+    NOTE: This function now uses the new unified panel detector.
+    The old implementation is preserved below for reference but is no longer used.
+    """
+    # Use new unified panel detector
+    panels = detect_panel_gaps_new(
+        stitched_image,
+        min_panel_height=MIN_PANEL_HEIGHT,
+        min_gap_height=MIN_GAP_HEIGHT,
+        white_threshold=WHITE_THRESHOLD
+    )
+
+    print(f"  Detected {len(panels)} panels", flush=True)
+    return panels
+
+
+# DEPRECATED: Old implementation preserved for reference
+# This code is no longer used but kept for comparison/rollback if needed
+def _detect_panel_gaps_old(stitched_image):
+    """
+    DEPRECATED: Old panel detection implementation.
+    Use detect_panel_gaps() instead, which wraps the new unified detector.
     """
     height, width = stitched_image.shape[:2]
 
@@ -137,8 +162,6 @@ def detect_panel_gaps(stitched_image):
             end_y = min(y + chunk_size, height)
             if end_y - y > MIN_PANEL_HEIGHT:
                 panels.append((y, end_y))
-
-    print(f"  Detected {len(panels)} panels", flush=True)
 
     return panels
 
