@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from core.pipeline import PipelineBuilder
 from core.feature_flags import get_feature_flags
 from core.models import Database, Episode, Panel
+from core.data_loader import load_existing_database, save_to_frontend_format
 from analyzers import (
     FaceRecognitionAnalyzer,
     DeepFaceEmotionAnalyzer,
@@ -89,9 +90,11 @@ def process(episode: Optional[str], parallel: bool, workers: int, output: str):
     # Load database
     click.echo(f"\n📊 Loading database from {output}...")
     try:
-        db = Database.load(output)
-        click.echo(f"  Found {len(db.episodes)} episodes")
-    except:
+        db = load_existing_database(output)
+        total_panels = sum(len(ep.panels) for ep in db.episodes)
+        click.echo(f"  Found {len(db.episodes)} episodes, {total_panels} panels")
+    except Exception as e:
+        click.echo(f"  Failed to load database: {e}")
         click.echo("  Creating new database")
         db = Database()
 
@@ -116,7 +119,7 @@ def process(episode: Optional[str], parallel: bool, workers: int, output: str):
 
     # Save database
     click.echo(f"\n💾 Saving database to {output}...")
-    db.save(output)
+    save_to_frontend_format(db, output)
     click.echo("✅ Complete!")
 
 
@@ -167,9 +170,9 @@ def validate(episodes: int, panels_per_episode: int):
     # Load database
     db_path = "frontend/data/panels_database.json"
     try:
-        db = Database.load(db_path)
-    except:
-        click.echo("❌ Failed to load database")
+        db = load_existing_database(db_path)
+    except Exception as e:
+        click.echo(f"❌ Failed to load database: {e}")
         return
 
     # Statistics
