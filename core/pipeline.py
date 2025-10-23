@@ -14,7 +14,7 @@ import time
 import cv2
 import numpy as np
 
-from .models import Panel, AnalysisResult, Tag, TagSource
+from .models import Panel, AnalysisResult, Tag, TagSource, TagCategory
 from .analyzer_plugin import AnalyzerPlugin, PluginRegistry, get_registry
 from .logger import get_logger
 
@@ -288,7 +288,7 @@ class Pipeline:
         # Character tags
         for char in analysis.characters:
             tags.append(Tag(
-                category="character",
+                category=TagCategory.CHARACTER,
                 value=char.name,
                 confidence=char.confidence,
                 source=TagSource.AI
@@ -297,7 +297,7 @@ class Pipeline:
         # Emotion tags
         for emotion in analysis.emotions:
             tags.append(Tag(
-                category="emotion",
+                category=TagCategory.EMOTION,
                 value=emotion.emotion,
                 confidence=emotion.confidence,
                 source=TagSource.AI,
@@ -307,7 +307,7 @@ class Pipeline:
         # Action tags
         for action in analysis.actions:
             tags.append(Tag(
-                category="action",
+                category=TagCategory.ACTION,
                 value=action.action,
                 confidence=action.confidence,
                 source=TagSource.AI
@@ -317,14 +317,14 @@ class Pipeline:
         if analysis.scene:
             if analysis.scene.setting:
                 tags.append(Tag(
-                    category="scene",
+                    category=TagCategory.SCENE,
                     value=analysis.scene.setting,
                     confidence=analysis.scene.confidence,
                     source=TagSource.AI
                 ))
             if analysis.scene.mood:
                 tags.append(Tag(
-                    category="scene",
+                    category=TagCategory.SCENE,
                     value=analysis.scene.mood,
                     confidence=analysis.scene.confidence,
                     source=TagSource.AI
