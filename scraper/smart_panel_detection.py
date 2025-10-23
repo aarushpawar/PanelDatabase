@@ -1,6 +1,16 @@
 """
 Smart Panel Detection - IMPROVED VERSION
-Uses edge detection to find ALL content and only splits in completely safe white gaps
+
+DEPRECATED: This module has been replaced by the unified panel detector.
+The functions below now delegate to scraper.core.panel_detector.
+All functionality has been consolidated into a single, well-tested module.
+
+For new code, use:
+    from scraper.core.panel_detector import PanelDetector
+    detector = PanelDetector(mode='standard')
+    panels = detector.detect(image_path)
+
+This file is kept for backward compatibility only.
 """
 
 import cv2
@@ -9,6 +19,18 @@ from pathlib import Path
 import json
 from tqdm import tqdm
 import sys
+import warnings
+
+# Import new unified detector
+from .migrate_panel_detection import detect_panels_with_content_awareness
+
+# Show deprecation warning when module is imported
+warnings.warn(
+    "smart_panel_detection.py is deprecated. "
+    "Use scraper.core.panel_detector.PanelDetector instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent.parent
